@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mysql-backup
+spec:
+  schedule: "*/10 * * * *"  # Runs every 10 minutes
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsUser: 0  # Run as root user
+          containers:
+          - name: db-backup
+            image: mysql:8.0  # MySQL image with mysqldump installed
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+            env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-pass-55g4kdk8kc
+                  key: password
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                # Directory for backups
+                mkdir -p /backup
+
+                # Backup SQL database as root
+                mysqldump -h wordpress-mysql -u root -p"$MYSQL_ROOT_PASSWORD" --databases wordpress > /backup/wrdsql-$(date "+%Y-%m-%d-%H-%M").sql
+
+                # Keep only the 8 most recent SQL backups
+                ls -1t /backup/wrdsql-* | tail -n +9 | xargs -r rm --
+
+          restartPolicy: OnFailure
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-pvc

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: temp-backup-check
+  labels:
+    purpose: backup-check
+spec:
+  containers:
+  - name: backup-check
+    image: bitnami/kubectl:latest  # This image contains kubectl
+    command: ["/bin/sh", "-c", "sleep infinity"]  # Keep the Pod running
+    volumeMounts:
+      - name: backup-pvc
+        mountPath: /mnt/backups  # Mount the PVC here
+  restartPolicy: Never
+  volumes:
+  - name: backup-pvc
+    persistentVolumeClaim:
+      claimName: backup-pvc
