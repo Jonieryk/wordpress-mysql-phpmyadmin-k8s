@@ -5,3 +5,8 @@ secretGenerator:
 resources:
   - mysql-deployment.yaml
   - wordpress-deployment.yaml
+  - namespace.yaml
+  - phpmyadmin.yaml
+  - mysql-backup-cronjob.yaml
+  - temp-backup-check.yaml
+namespace: dev

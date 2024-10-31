@@ -2,7 +2,9 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: mysql-backup
+  namespace: dev
 spec:
+  successfulJobsHistoryLimit: 10
   schedule: "*/10 * * * *"  # Runs every 10 minutes
   jobTemplate:
     spec:
@@ -39,3 +41,16 @@ spec:
           - name: backup-storage
             persistentVolumeClaim:
               claimName: backup-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-pvc
+  namespace: dev
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi  # Adjust storage size as needed
+  storageClassName: standard  # Ensure this matches your cluster's StorageClass
